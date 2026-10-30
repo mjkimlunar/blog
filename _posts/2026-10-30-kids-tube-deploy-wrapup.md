@@ -9,6 +9,8 @@ AI 서비스 인 프로덕션(모두의연구소) 모듈 "프로덕트 설계부
 
 **👉 글 보기: [라즈베리파이에서 블루그린까지](/blog/kids-tube-wrapup/)** (그림 위주, 날짜를 누르면 배포 구조가 바뀌는 페이지)
 
+**👉 키즈 튜브 써 보기: [가입 신청](https://kids-tube-543881501705.asia-northeast3.run.app/signup)** (이메일과 한마디 → 운영자 승인 → 같은 이메일의 Google 계정으로 로그인. 초대 코드가 있으면 바로 가입)
+
 ![10/29 블루그린 배포 구조](/blog/kids-tube-wrapup/diagram-10-29.png)
 
 - 10/19 PRD 한 장 → 10/20 Cloud Run 첫 배포 → 10/22 GitHub Actions 자동 배포(WIF) → 10/26 CI 두 시간대·staging·Dockerfile → 10/27 이미지 승격 → 10/28 무중단 개념 → 10/29 Cloud Run 블루그린 + 롤백 버튼

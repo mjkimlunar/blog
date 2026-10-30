@@ -140,6 +140,9 @@
   footer { color: var(--muted); font-size: 0.88rem; border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 4px; }
   /* 앱 소개: 플레이스토어 식 화면 캡처 띠 */
   .facts { display: flex; flex-wrap: wrap; gap: 6px; }
+  .try { display: grid; gap: 6px; justify-items: start; }
+  .cta { display: inline-block; padding: 9px 16px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); text-decoration: none; font-family: var(--display); font-size: 1.05rem; }
+  .cta:hover { filter: brightness(1.05); }
   .facts span { font-size: 0.86rem; padding: 5px 10px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); }
   .store { display: flex; gap: 14px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; padding: 4px 2px 10px; scrollbar-width: thin; }
   .store figure { flex: 0 0 min(72vw, 232px); margin: 0; scroll-snap-align: start; display: grid; gap: 8px; align-content: start; }
@@ -194,6 +197,7 @@
       <span>🧒 아이 이름·계정 저장 안 함</span>
       <span>🤖 AI는 추천만, 노출은 부모가</span>
     </div>
+    <p class="try"><a class="cta" href="https://kids-tube-543881501705.asia-northeast3.run.app/signup">👉 써 보기: 가입 신청</a> <span class="cap">이메일과 한마디를 남기면 운영자가 승인하고, 같은 이메일의 Google 계정으로 들어온다. 초대 코드가 있으면 바로 가입. 아는 집만 받는 파일럿이라 승인이 조금 걸릴 수 있다.</span></p>
     <div class="store" role="list" aria-label="앱 화면">
       <figure role="listitem"><div class="phone"><img src="shots/01-kid-videos.png" alt="아이 화면: 승인된 영상 목록, 잠긴 보상 영상에 ⭐20 표시" loading="lazy"></div><figcaption><b>부모가 고른 영상만</b><span>아이 화면. 🔒 ⭐20은 포인트로 하루 여는 보상 영상</span></figcaption></figure>
       <figure role="listitem"><div class="phone"><img src="shots/02-kid-ask.png" alt="아이 찾기 화면: 검색 결과와 '엄마·아빠에게 전했어요'" loading="lazy"></div><figcaption><b>검색은 부탁으로</b><span>YouTube가 아동용으로 지정한 영상만 보이고, 고르면 부모에게 전해진다</span></figcaption></figure>
@@ -205,7 +209,6 @@
       <figure role="listitem"><div class="phone"><img src="shots/08-parent-activity.png" alt="부모 활동 기록 화면: 통계 타일과 세부 내역" loading="lazy"></div><figcaption><b>무엇을 골랐는지까지</b><span>처음에 맞힘 %, 다시 보고 맞힘, 문제마다 고른 보기 순서</span></figcaption></figure>
     </div>
     <p class="cap">옆으로 넘겨 보세요. 체험 가족 화면이라 영상은 예시다.</p>
-    <p class="cap">써 보고 싶은 분은 <a href="https://kids-tube-543881501705.asia-northeast3.run.app/signup">가입 신청</a>(이메일과 한마디 → 운영자 승인 → Google 로그인). 초대 코드는 아는 집에 바로 주는 지름길이고, 신청으로도 가입된다. 아는 집만 받는 파일럿이라 승인이 조금 걸릴 수 있다.</p>
     <div class="agent">
       <div class="app why">
         <h3>왜 만들었나 → 저작권 → 그래서 채널</h3>

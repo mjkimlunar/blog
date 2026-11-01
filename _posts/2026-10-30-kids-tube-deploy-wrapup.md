@@ -9,7 +9,7 @@ AI 서비스 인 프로덕션(모두의연구소) 모듈 "프로덕트 설계부
 
 **👉 글 보기: [라즈베리파이에서 블루그린까지](/blog/kids-tube-wrapup/)** (그림 위주, 날짜를 누르면 배포 구조가 바뀌는 페이지)
 
-**🧪 키즈 튜브 바로 써 보기: [체험 코드로 시작](https://kids-tube-543881501705.asia-northeast3.run.app/signup?trial=5455GXG342)** (가입 없이 24시간, 체험 코드 `5455GXG342`, 11/6까지) · **[가입 신청](https://kids-tube-543881501705.asia-northeast3.run.app/signup)** (이메일과 한마디 → 운영자 승인 → 같은 이메일의 Google 계정으로 로그인)
+**🧪 키즈 튜브 바로 써 보기: [체험 코드로 시작](https://kids-tube-543881501705.asia-northeast3.run.app/signup?trial=5455GXG342)** (가입 없이 24시간, 체험 코드 `5455GXG342`, 11/6까지) · **[바로 가입](https://kids-tube-543881501705.asia-northeast3.run.app/signup)** (우리 집 이름 + Google 계정, 초대 코드·승인 없음)
 
 ![10/29 블루그린 배포 구조](/blog/kids-tube-wrapup/diagram-10-29.png)
 

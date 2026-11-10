@@ -165,12 +165,22 @@
   .tts .line { font-family: var(--display); font-size: 1.35rem; }
   .tts .line i { font-style: normal; color: var(--accent); padding: 0 4px; }
   .tts small { display: block; color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
-  .factory { display: grid; gap: 6px; }
-  .step { display: grid; grid-template-columns: 74px 1fr; gap: 10px; align-items: start; font-size: 0.9rem; }
-  .step .who { font-family: var(--mono); font-size: 0.72rem; padding: 4px 6px; border-radius: 8px; text-align: center; border: 1px solid var(--line); background: var(--bg); }
-  .step .who.dev { background: var(--person-bg); border-color: var(--person); }
-  .step .who.vid { background: var(--course-bg); border-color: var(--course); }
-  .step .who.me { background: var(--card); border-color: var(--accent); }
+  .factory { display: grid; gap: 10px; }
+  .fac { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); grid-template-areas: "a x1 b x2 c x3 d" ". . up . . . ." ". . me . . . ."; align-items: center; gap: 6px; }
+  .fbox { display: grid; gap: 2px; padding: 10px 8px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); text-align: center; min-width: 0; }
+  .fbox .ftag { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+  .fbox b { font-size: 0.95rem; line-height: 1.3; }
+  .fbox small { font-size: 0.78rem; color: var(--muted); line-height: 1.35; }
+  .fbox.dev { background: var(--person-bg); border-color: var(--person); }
+  .fbox.mov { background: var(--course-bg); border-color: var(--course); }
+  .fbox.fam { background: var(--ok-bg); border-color: var(--ok); }
+  .fbox.me { background: var(--card); border: 2px dashed var(--accent); }
+  .farr { color: var(--muted); font-size: 1.2rem; text-align: center; line-height: 1; }
+  @media (max-width: 600px) {
+    .fac { grid-template-columns: minmax(0, 1.3fr) auto minmax(0, 1fr); grid-template-areas: "a . ." "x1 . ." "b up me" "x2 . ." "c . ." "x3 . ." "d . ."; }
+    .fac .farr.f { transform: rotate(90deg); }
+    .fac .farr.u { transform: rotate(-90deg); }
+  }
   .ba { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
   @media (max-width: 520px) { .ba { grid-template-columns: 1fr; } }
   .ba figure { margin: 0; display: grid; gap: 4px; min-width: 0; }
@@ -363,10 +373,17 @@
     </div>
     <div class="panel factory" aria-label="영상 한 편이 앱에 들어가기까지">
       <h3>두 AI 세션이 나눠 만든다</h3>
-      <div class="step"><span class="who dev">개발 세션</span><span>커리큘럼과 <b>주문서</b>: 주제·나이·학습 목표·성취기준(2022 개정 교육과정 코드). 늘 2편 앞서 주문</span></div>
-      <div class="step"><span class="who vid">영상 세션</span><span>팩트시트 → 대본 → 음성 → 그림·애니 → 합성 → 업로드 → <span class="mono">quiz.json</span></span></div>
-      <div class="step"><span class="who dev">개발 세션</span><span>퀴즈를 검사기로 확인하고, 명령 한 줄로 운영에 넣음</span></div>
-      <div class="step"><span class="who me">나</span><span>대본과 그림을 보고 고칠 곳을 짚고, 업로드 버튼을 누른다</span></div>
+      <div class="fac">
+        <div class="fbox dev" style="grid-area: a"><span class="ftag">개발 세션</span><b>📝 주문서</b><small>주제·나이·성취기준</small></div>
+        <span class="farr f" style="grid-area: x1" aria-hidden="true">→</span>
+        <div class="fbox mov" style="grid-area: b"><span class="ftag">영상 세션</span><b>🎬 영상 + 퀴즈</b><small>대본·그림·음성 → 업로드</small></div>
+        <span class="farr f" style="grid-area: x2" aria-hidden="true">→</span>
+        <div class="fbox dev" style="grid-area: c"><span class="ftag">개발 세션</span><b>🧩 퀴즈 검사</b><small>명령 한 줄로 운영에</small></div>
+        <span class="farr f" style="grid-area: x3" aria-hidden="true">→</span>
+        <div class="fbox fam" style="grid-area: d"><span class="ftag">부모</span><b>⭐ 공식 퀴즈 불러오기</b><small>누르면 끝</small></div>
+        <span class="farr u" style="grid-area: up" aria-hidden="true">↑</span>
+        <div class="fbox me" style="grid-area: me"><span class="ftag">나</span><b>👀 대본·그림 확인</b><small>업로드 버튼은 내가</small></div>
+      </div>
       <p class="cap">지금까지 주문서로 만든 영상 31편(곱셈·나눗셈·과학·한국사). 채널에서 가장 오래 본 건 세종대왕 편(평균 2분 23초, 43.9%)이었고, 그래서 한국사 시리즈가 생겼다.</p>
     </div>
     <div class="lecture"><b>📘 강의 → 우리 적용 · 노드 1 · 12</b>

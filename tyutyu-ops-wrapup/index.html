@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="AI 서비스 인 프로덕션 Wrap up: 내가 쓰려고 만든 가족용 앱 튜튜키즈를 남이 쓰는 서비스로 만들며 배운 것">
+<title>내가 쓰려고 만든 앱</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff7a59'/%3E%3Cpath d='M26 20v24l18-12z' fill='white'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  /* 지난 글(라즈베리파이에서 블루그린까지)과 같은 크림·코랄 토큰. 여섯 장 = 내가 한 일 + 📘 강의 + 💡 배운 점, 눌러 보는 칸 다섯 */
+  :root {
+    --bg: #fff8e7; --card: #ffffff; --ink: #2b2b3a; --muted: #6b6b80; --accent: #ff7a59; --accent-ink: #ffffff; --line: #e9e0cc;
+    --ok: #2f8f55; --ok-bg: #e6f5ec; --bad: #c63a52; --bad-bg: #fdeaee; --warn: #9a6a00; --warn-bg: #fff3d1;
+    --person: #4a6cf7; --person-bg: #e9eeff; --course: #8a6d3b; --course-bg: #f6ecd9;
+    --display: 'Jua', 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    --body: 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    --mono: 'IBM Plex Mono', 'Consolas', 'D2Coding', monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1b1b26; --card: #272736; --ink: #f2f2f7; --muted: #a5a5bb; --line: #3a3a4e; --ok: #6fd39a; --ok-bg: #1f3a2b; --bad: #ff8aa0; --bad-bg: #4a2430;
+      --warn: #ffd27a; --warn-bg: #43361a; --person: #9db0ff; --person-bg: #2a3150; --course: #e3c48f; --course-bg: #3b3224; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1b1b26; --card: #272736; --ink: #f2f2f7; --muted: #a5a5bb; --line: #3a3a4e; --ok: #6fd39a; --ok-bg: #1f3a2b; --bad: #ff8aa0; --bad-bg: #4a2430;
+    --warn: #ffd27a; --warn-bg: #43361a; --person: #9db0ff; --person-bg: #2a3150; --course: #e3c48f; --course-bg: #3b3224; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.65; word-break: keep-all; overflow-wrap: anywhere; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+  .wrap { max-width: 760px; margin: 0 auto; padding-block: 36px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 44px; }
+  .wrap > *, section > * { min-width: 0; max-width: 100%; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 400; line-height: 1.25; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2rem, 6vw, 2.8rem); }
+  h2 { font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+  h2 .no { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 1.05rem; flex: none; }
+  h3 { font-size: 1.1rem; }
+  p { margin: 0; }
+  a { color: var(--accent); text-underline-offset: 3px; }
+  button { font: inherit; color: inherit; }
+  button:focus-visible, a:focus-visible { outline: 3px solid var(--person); outline-offset: 2px; }
+  ul, ol { margin: 0; padding-left: 1.2em; }
+  li + li { margin-top: 4px; }
+  .eyebrow { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  header { display: grid; gap: 12px; }
+  .lede { font-size: 1.1rem; }
+  .cap { color: var(--muted); font-size: 0.9rem; }
+  section { display: grid; gap: 14px; scroll-margin-top: 16px; }
+  .when { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 14px; }
+  .mono { font-family: var(--mono); font-size: 0.85em; }
+
+  /* 목차 */
+  .toc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  @media (max-width: 560px) { .toc { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .toc a { display: grid; gap: 2px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink); text-decoration: none; min-width: 0; }
+  .toc a b { font-family: var(--display); font-weight: 400; color: var(--accent); }
+  .toc a span { font-size: 0.88rem; line-height: 1.35; }
+
+  /* 장마다 붙는 상자 */
+  .lecture { background: var(--course-bg); border: 1px solid var(--line); border-left: 4px solid var(--course); border-radius: 0 14px 14px 0; padding: 12px 14px; display: grid; gap: 8px; font-size: 0.93rem; }
+  .lecture > b { font-family: var(--mono); font-size: 0.76rem; letter-spacing: 0.04em; color: var(--course); }
+  .applied { list-style: none; padding: 0; display: grid; gap: 6px; }
+  .applied li { display: grid; grid-template-columns: minmax(0, 0.9fr) auto minmax(0, 1.3fr); gap: 8px; align-items: baseline; margin: 0; }
+  .applied li > b { font-weight: 700; }
+  .applied li > i { font-style: normal; color: var(--course); }
+  .applied .node { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); font-weight: 400; }
+  @media (max-width: 520px) { .applied li { grid-template-columns: 1fr; gap: 0; } .applied li > i { display: none; } .applied li > span::before { content: "→ "; color: var(--course); } }
+  .learned { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; background: var(--card); border: 2px solid var(--accent); border-radius: 14px; padding: 12px 14px; font-size: 0.97rem; }
+  .learned .i { font-size: 1.3rem; line-height: 1.3; }
+  .oops { font-size: 0.92rem; border-left: 4px solid var(--bad); padding: 8px 12px; background: var(--bad-bg); border-radius: 0 12px 12px 0; }
+  .oops b { color: var(--bad); }
+
+  /* 1장: 막는 일 나누기 */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 560px) { .split { grid-template-columns: 1fr; } }
+  .side { border-radius: 14px; padding: 12px 14px; font-size: 0.92rem; display: grid; gap: 6px; border: 1px solid var(--line); align-content: start; }
+  .side.fl { background: var(--bg); }
+  .side.tt { background: var(--person-bg); border-color: var(--person); }
+  .side h3 { font-size: 1rem; }
+
+  /* 2장: 구조 */
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .box { font-family: var(--mono); font-size: 0.8rem; line-height: 1.35; padding: 7px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); max-width: 100%; }
+  .box.person { background: var(--person-bg); border-color: var(--person); }
+  .box.hot { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
+  .arr { color: var(--muted); }
+  .rename { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-family: var(--display); font-size: 1.4rem; }
+  .rename s { color: var(--muted); text-decoration-color: var(--bad); text-decoration-thickness: 3px; }
+  .rename b { font-weight: 400; color: var(--accent); }
+
+  /* 3장: 대화 · 세 겹 문 · 가드레일 */
+  .talk { display: grid; gap: 8px; }
+  .say { display: grid; gap: 2px; max-width: 88%; }
+  .say .who { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+  .say .b { padding: 9px 12px; border-radius: 16px; border: 1px solid var(--line); font-size: 0.95rem; }
+  .say.kid { justify-self: start; }
+  .say.kid .b { background: var(--person-bg); border-color: var(--person); border-bottom-left-radius: 4px; }
+  .say.me { justify-self: end; }
+  .say.me .b { background: var(--card); border-color: var(--accent); border-bottom-right-radius: 4px; }
+  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+  .rule { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 0.88rem; display: grid; gap: 2px; }
+  .rule b { font-family: var(--display); font-weight: 400; font-size: 1.15rem; color: var(--accent); }
+  .gates { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 600px) { .gates { grid-template-columns: 1fr; } }
+  .switches { display: grid; gap: 8px; }
+  .sw { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; text-align: left; width: 100%; min-height: 56px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; }
+  .sw b { display: block; font-size: 0.95rem; }
+  .sw small { display: block; color: var(--muted); font-size: 0.8rem; line-height: 1.35; }
+  .sw .who { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+  .knob { width: 46px; height: 26px; border-radius: 999px; background: var(--line); position: relative; flex: none; transition: background 0.2s; }
+  .knob::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--card); box-shadow: 0 1px 2px rgba(0,0,0,0.25); transition: transform 0.2s; }
+  .sw[aria-pressed="true"] { border-color: var(--ok); background: var(--ok-bg); }
+  .sw[aria-pressed="true"] .knob { background: var(--ok); }
+  .sw[aria-pressed="true"] .knob::after { transform: translateX(20px); }
+  .phone { border: 2px solid var(--ink); border-radius: 26px; padding: 14px 12px 18px; background: var(--bg); display: grid; gap: 10px; max-width: 300px; justify-self: center; width: 100%; }
+  .phone .bar { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); display: flex; justify-content: space-between; }
+  .vid { border-radius: 14px; background: var(--card); border: 1px solid var(--line); overflow: hidden; }
+  .thumb { aspect-ratio: 16 / 9; max-width: 100%; display: grid; place-items: center; font-size: 2.6rem; background: linear-gradient(135deg, #ffd9a8, #ffb199); }
+  .vid .t { padding: 8px 10px 0; font-size: 0.9rem; font-weight: 700; }
+  .vid .c { padding: 0 10px; font-size: 0.75rem; color: var(--muted); }
+  .acts { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px 10px; }
+  .act { font-size: 0.8rem; padding: 5px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); }
+  .act.ask { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 700; }
+  @media (prefers-reduced-motion: no-preference) { .act.ask { animation: pop 0.3s ease-out; } }
+  @keyframes pop { from { transform: scale(0.85); opacity: 0.4; } to { transform: none; opacity: 1; } }
+  .why-off { font-size: 0.82rem; color: var(--muted); background: var(--card); border: 1px dashed var(--line); border-radius: 12px; padding: 8px 10px; }
+  .cases { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cases button, .seg button { font-size: 0.88rem; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; }
+  .cases button[aria-pressed="true"], .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .chat { display: grid; gap: 10px; }
+  .msg { display: grid; gap: 4px; max-width: 92%; }
+  .msg .who { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+  .msg .b { padding: 10px 12px; border-radius: 16px; font-size: 0.95rem; border: 1px solid var(--line); }
+  .msg.kid { justify-self: end; }
+  .msg.kid .b { background: var(--person-bg); border-color: var(--person); border-bottom-right-radius: 4px; }
+  .msg.raw .b { background: var(--bg); color: var(--muted); border-style: dashed; }
+  .msg.raw .b.cut { text-decoration: line-through; text-decoration-color: var(--bad); }
+  .msg.raw .b .gone { text-decoration: line-through; text-decoration-color: var(--bad); }
+  .msg.out .b { background: var(--card); border-color: var(--ok); border-width: 2px; border-bottom-left-radius: 4px; }
+  .gate { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
+  .gate::before, .gate::after { content: ""; flex: 1; border-top: 1px dashed var(--line); }
+  .tag { font-family: var(--mono); font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; }
+  .tag.block { color: var(--bad); }
+  .tag.pass { color: var(--ok); }
+  .tag.miss { color: var(--warn); }
+  .verdict { font-size: 0.9rem; padding: 10px 12px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); }
+  .verdict.miss { background: var(--warn-bg); border-color: var(--warn); }
+
+  /* 4장: 끊어 읽기 · 영상 공장 */
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tts { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; padding: 14px; border-radius: 14px; background: var(--bg); border: 1px solid var(--line); }
+  .tts .pic { font-size: 2.8rem; line-height: 1; }
+  .tts .line { font-family: var(--display); font-size: 1.35rem; }
+  .tts .line i { font-style: normal; color: var(--accent); padding: 0 4px; }
+  .tts small { display: block; color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+  .factory { display: grid; gap: 6px; }
+  .step { display: grid; grid-template-columns: 74px 1fr; gap: 10px; align-items: start; font-size: 0.9rem; }
+  .step .who { font-family: var(--mono); font-size: 0.72rem; padding: 4px 6px; border-radius: 8px; text-align: center; border: 1px solid var(--line); background: var(--bg); }
+  .step .who.dev { background: var(--person-bg); border-color: var(--person); }
+  .step .who.vid { background: var(--course-bg); border-color: var(--course); }
+  .step .who.me { background: var(--card); border-color: var(--accent); }
+  .fixes { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+  .fix { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 0.88rem; display: grid; gap: 4px; }
+  .fix b { font-size: 0.93rem; }
+  .fix span { color: var(--muted); }
+
+  /* 5장: 콜드 스타트 · 배포 길 */
+  .cold { display: grid; gap: 12px; }
+  .cold .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .cold .label { font-size: 0.88rem; color: var(--muted); }
+  .go { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 2px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 700; cursor: pointer; }
+  .go:disabled { opacity: 0.5; cursor: default; }
+  .lane { display: grid; grid-template-columns: 92px 1fr; gap: 8px; align-items: center; font-size: 0.88rem; }
+  .lane .nm { font-family: var(--mono); font-size: 0.74rem; color: var(--muted); }
+  .track { position: relative; height: 34px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
+  .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--warn-bg); border-right: 2px solid var(--warn); }
+  .track .txt { position: absolute; inset: 0; display: flex; align-items: center; padding: 0 10px; font-size: 0.85rem; white-space: nowrap; overflow: hidden; }
+  .track.ok .fill { background: var(--ok-bg); border-color: var(--ok); }
+  .track.bad .fill { background: var(--bad-bg); border-color: var(--bad); }
+  .coldnote { font-size: 0.9rem; padding: 10px 12px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); }
+  .road { display: grid; gap: 6px; }
+  .road .stop { display: grid; grid-template-columns: 58px 1fr; gap: 10px; align-items: start; font-size: 0.9rem; }
+  .road .stop .d { font-family: var(--mono); font-size: 0.76rem; color: var(--muted); padding-top: 2px; }
+  .road .stop.me b { color: var(--accent); }
+  .nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .num { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 2px; min-width: 0; }
+  .num strong { font-family: var(--display); font-weight: 400; font-size: 1.7rem; color: var(--accent); line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .num span { color: var(--muted); font-size: 0.85rem; }
+
+  /* 6장: 산 */
+  .peaks { display: grid; gap: 6px; }
+  .peak { display: grid; grid-template-columns: 30px 1fr; gap: 8px; align-items: start; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); font-size: 0.92rem; }
+  .peak .s { font-size: 1.1rem; line-height: 1.4; }
+  .peak.done { background: var(--ok-bg); }
+  .big { display: grid; gap: 10px; }
+  .bigone { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+  .bigone .n { font-family: var(--display); font-size: 1.5rem; color: var(--accent); text-align: center; }
+  .bigone h3 { margin-bottom: 4px; }
+  .bigone p { font-size: 0.95rem; }
+  footer { color: var(--muted); font-size: 0.88rem; border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 4px; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <p class="eyebrow">AI 서비스 인 프로덕션 · Wrap up · 2026-11-10</p>
+    <h1>내가 쓰려고 만든 앱</h1>
+    <p class="lede">아이가 볼 영상을 내가 고르고 싶어서 만든 앱이, 17일 강의를 지나며 남의 가족도 쓰는 서비스가 되어 가는 이야기. 튜튜키즈 제작기와 배운 점을 여섯 장으로 묶었다.</p>
+    <p class="cap">튜튜키즈 = 부모가 승인한 YouTube 영상만 아이에게 보여 주는 가족용 앱. 코드는 거의 다 AI(Claude Code)가 쓰고, 나는 무엇을 만들지와 무엇을 내보낼지를 정했다. 강의는 AI 친구 에이전트로 가르쳤고, 나는 노드마다 그날 배운 걸 이 앱에 옮겼다. 장마다 <span class="mono">📘</span>는 그때 강의 내용, <span class="mono">💡</span>는 배운 점이다.</p>
+    <nav class="toc" aria-label="차례">
+      <a href="#c1"><b>1</b><span>내가 쓰려고 만든 앱</span></a>
+      <a href="#c2"><b>2</b><span>PRD와 라즈베리파이</span></a>
+      <a href="#c3"><b>3</b><span>AI를 넣어 보자</span></a>
+      <a href="#c4"><b>4</b><span>전용 채널을 만들자</span></a>
+      <a href="#c5"><b>5</b><span>남이 써도 될까</span></a>
+      <a href="#c6"><b>6</b><span>지금 오르는 산</span></a>
+    </nav>
+  </header>
+
+  <!-- 1 -->
+  <section id="c1" aria-labelledby="h1x">
+    <p class="when">강의 전 · feat. AI 바이브 코딩</p>
+    <h2 id="h1x"><span class="no">1</span>내가 쓰려고 만든 앱</h2>
+    <p>출발은 아이의 시청 습관이었다. 숏츠·릴스를 한번 열면 끝없이 넘긴다. Family Link도 쓰고 있었지만, 그건 <b>앱과 시간</b>을 막는 도구였다. YouTube 앱을 막으면 볼 게 없고, 열면 전부 열린다. 그 사이 <b>“어떤 영상인가”</b>를 정하는 칸이 비어 있었다. 그래서 내가 원하는 앱을, 배우면서 만들기로 했다.</p>
+    <div class="split">
+      <div class="side fl"><h3>🛡 Family Link가 하는 일</h3><ul><li>앱 설치 승인, 하루 사용 시간</li><li>Chrome은 승인한 사이트만</li><li>YouTube 앱은 통째로 막기</li></ul></div>
+      <div class="side tt"><h3>📺 튜튜키즈가 하는 일</h3><ul><li>부모가 승인한 영상만 재생(공식 임베드)</li><li>아이 검색은 YouTube가 아동용으로 지정한 것만, 보려면 부모에게 부탁</li><li>아이 이름·계정은 받지 않음</li></ul></div>
+    </div>
+    <div class="learned"><span class="i">💡</span><p>둘은 경쟁이 아니라 나눠 맡기다. 시간과 설치는 Family Link, 영상의 범위는 튜튜키즈. 아이 폰의 Chrome 시간 제한이 곧 시청 시간 제한이 된다.</p></div>
+  </section>
+
+  <!-- 2 -->
+  <section id="c2" aria-labelledby="h2x">
+    <p class="when">10-19 · 노드 1</p>
+    <h2 id="h2x"><span class="no">2</span>PRD 한 장과 라즈베리파이</h2>
+    <p>첫 구조는 단순했다. 나만 쓰니까 집에 있는 라즈베리파이 한 대면 충분했고, 밖에서는 Tailscale로 들어갔다. 아이 태블릿에는 태그를 붙여 앱 포트 하나만 열었다.</p>
+    <div class="flow" aria-label="첫 구조">
+      <span class="box person">👤 내 노트북</span><span class="arr">→ scp</span><span class="box hot">🍓 라즈베리파이 · 포트 3010</span><span class="arr">←</span><span class="box person">👧 아이 태블릿 · Tailscale tag:kid</span>
+    </div>
+    <p>이름은 <b>키즈 튜브(kids-tube)</b>. 정체성은 분명했는데, 나중에 YouTube 브랜드 규정에 걸렸다. “Tube”처럼 YouTube를 떠올리게 하는 이름은 쓰지 말라는 것.</p>
+    <div class="rename" aria-label="이름 바꾸기"><s>키즈 튜브</s><span class="arr">→</span><b>튜튜키즈</b><span class="cap">(10-30, 저장소·서버 주소는 kids-tube 그대로)</span></div>
+    <div class="lecture"><b>📘 강의 → 우리 적용 · 노드 1 AI 기능을 서비스로 설계하기</b>
+      <ul class="applied">
+        <li><b>사용 맥락 · 채널</b><i>→</i><span>부모 폰(관리)과 아이 기기(시청) 두 화면으로</span></li>
+        <li><b>AI 오류 대응</b><i>→</i><span>“AI는 추천, 공개는 부모”</span></li>
+        <li><b>PRD 한 장</b><i>→</i><span>접근 제어·데이터 처리·비용·파일럿 칸을 채움</span></li>
+      </ul>
+    </div>
+    <div class="learned"><span class="i">💡</span><p>이름, 약관, 개인정보, 비용. 나만 쓰는 앱이었다면 신경 쓰지 않았을 영역이 PRD 칸으로 먼저 보였다. 이름은 그중 가장 먼저 부딪힌 벽이었다.</p></div>
+  </section>
+
+  <!-- 3 -->
+  <section id="c3" aria-labelledby="h3x">
+    <p class="when">10-21 ~ 11-09 · 노드 1·10·11·15</p>
+    <h2 id="h3x"><span class="no">3</span>AI를 넣어 보자</h2>
+    <p>앱을 열어 줬더니 반응은 이랬다.</p>
+    <div class="talk">
+      <div class="say kid"><span class="who">아이</span><div class="b">골라 준 건 재미없어. 쇼츠 틀어 줘!</div></div>
+      <div class="say me"><span class="who">나</span><div class="b">안 돼. 보고 싶으면 포인트를 모아. AI가 퀴즈를 내 주고, 맞히면 포인트를 줄게.</div></div>
+      <div class="say me"><span class="who">나</span><div class="b">포인트 없이는 보상 영상도 없어. 대신 받아쓰기 숙제를 하면 200점!</div></div>
+    </div>
+    <p>그래서 영상이 둘로 나뉘었다. <b>📚 학습 영상</b>은 보고 퀴즈를 풀어 점수를 모으고, <b>⭐ 보상 영상</b>은 모은 점수로 그날 하루 연다. 그런데 아이는 금방 영상을 안 보고 찍기 시작했다(10-24). 규칙이 하나씩 늘었다.</p>
+    <div class="rules">
+      <div class="rule"><b>70%</b>영상을 이만큼 봐야 퀴즈가 열림(건너뛰기는 안 셈)</div>
+      <div class="rule"><b>3초</b>문제마다 읽는 시간</div>
+      <div class="rule"><b>10초</b>틀리면 그 장면을 다시 보고 와야 다시 고름</div>
+      <div class="rule"><b>10점</b>처음에 맞힌 문제마다, 하루 100점까지</div>
+    </div>
+    <p>퀴즈는 AI가 초안을 쓴다. 대본을 주거나, Gemini가 영상을 직접 보고 정리하면 Claude가 문제를 만든다. 하지만 <b>AI 결과는 추천일 뿐, 공개는 부모가 누른다.</b> 이 원칙에 딱 하나 예외를 만든 게 11-03의 <b>🤖 아이 AI 질문하기</b>다. 아이가 영상을 보다 궁금한 걸 물으면 AI가 바로 답한다. 그래서 문을 세 겹으로 달았다. 셋을 다 켜 보자.</p>
+    <div class="panel gates">
+      <div class="switches" id="switches">
+        <button class="sw" type="button" aria-pressed="false" data-k="member"><span><span class="who">운영자</span><b>💎 이 가족 멤버십</b><small>가드레일 평가가 넉넉해질 때까지 아는 집부터</small></span><span class="knob" aria-hidden="true"></span></button>
+        <button class="sw" type="button" aria-pressed="false" data-k="parent"><span><span class="who">부모</span><b>🎯 아이 설정 “AI에게 질문하기”</b><small>멤버십이어도 부모가 직접 켜야 함</small></span><span class="knob" aria-hidden="true"></span></button>
+        <button class="sw" type="button" aria-pressed="false" data-k="source"><span><span class="who">운영자</span><b>📺 질문하기 채널 + 근거 자료</b><small>우리가 쓴 대본·공식 퀴즈가 있는 영상만, 답은 그 안에서만</small></span><span class="knob" aria-hidden="true"></span></button>
+      </div>
+      <div class="phone" aria-live="polite">
+        <div class="bar"><span>아이 화면</span><span>📺 영상</span></div>
+        <div class="vid">
+          <div class="thumb" aria-hidden="true">🧲</div>
+          <p class="t">자석은 무엇을 끌어당길까</p>
+          <p class="c">📺 튜튜키즈</p>
+          <div class="acts"><span class="act">▶ 보기</span><span class="act">📝 퀴즈</span><span class="act ask" id="askBtn" hidden>🤖 물어보기</span></div>
+        </div>
+        <p class="why-off" id="whyOff">버튼 없음</p>
+      </div>
+    </div>
+    <p>문을 열어도 끝이 아니다. 같은 지시문을 두 번 돌려도 통과율이 10%p씩 달라졌다. 그래서 아이에게 절대 가면 안 되는 것은 모델이 답한 <em>뒤</em> 코드가 한 번 더 본다. 질문을 골라 보자.</p>
+    <div class="panel">
+      <div class="cases" role="group" aria-label="질문 고르기" id="cases"></div>
+      <div class="chat" id="chat" aria-live="polite"></div>
+      <p class="cap">초록 테두리 답은 실제 코드(<span class="mono">lib/ask.js</span>의 <span class="mono">guard()</span> → <span class="mono">limitSentences()</span>)에 넣어 나온 그대로다. 점선 칸의 막기 전 답은 평가·운영에서 모델이 쓴 꼴을 옮긴 예시다.</p>
+    </div>
+    <div class="lecture"><b>📘 강의 → 우리 적용 · 노드 10·11·15 Langfuse와 개선</b>
+      <ul class="applied">
+        <li><b>트레이스 <span class="node">노드 10</span></b><i>→</i><span>퀴즈 초안 한 번 = 트레이스 하나, 원문 대신 글자 수만</span></li>
+        <li><b>데이터셋 · LLM 심사 <span class="node">노드 11</span></b><i>→</i><span>아이 질문 20개로 지시문 네 판 비교 → 흔들림이 커서 코드 가드레일</span></li>
+        <li><b>로그로 개선 <span class="node">노드 15</span></b><i>→</i><span>3문장 넘는 답 39% → 0 (기준을 먼저 커밋)</span></li>
+      </ul>
+    </div>
+    <p class="oops"><b>걸린 곳</b> 운영에서 부모가 “2주일은 며칠이야?”라고 묻자 “14일”이 나갔다. 퀴즈 정답 보기가 “7 × 2”라 글자로는 겹치지 않았다. 지금은 정답이 식이면 값(14)으로 비교한다.</p>
+    <div class="learned"><span class="i">💡</span><p>지시문은 바람이고 코드는 약속이다. 말투처럼 흔들려도 되는 건 지시문에, 정답·개인정보·계산 답처럼 절대 새면 안 되는 건 코드에 둔다.</p></div>
+  </section>
+
+  <!-- 4 -->
+  <section id="c4" aria-labelledby="h4x">
+    <p class="when">10-23 ~ 지금 · 노드 1·12</p>
+    <h2 id="h4x"><span class="no">4</span>전용 채널을 만들자</h2>
+    <p>AI 퀴즈에는 재료가 필요하다. 그런데 남의 영상 자막을 가져오는 건 저작권 위반 소지가 있다(그래서 자막은 긁지도, 저장하지도 않는다). 부모에게 대본을 붙여 넣게 하자니 나부터 귀찮았다. 답은 <b>퀴즈까지 우리가 만든 영상</b>이었다. 부모는 “⭐ 공식 퀴즈 불러오기”만 누르면 된다. 채널 이름도 여기서 한 번 더 걸렸다. 키즈 튜브 같은 이름은 YouTube 채널로도 적절하지 않다고 해서 <a href="https://www.youtube.com/@TyuTyuKids">@TyuTyuKids</a>가 됐다.</p>
+    <p>재료는 Google Cloud 무료 체험 크레딧(약 40만 원)이었다. 처음엔 영상 생성 모델로 클립을 만들었는데 124초에 약 1만 7천 원이 들었다. 그래서 그림 + 코드 애니메이션 + 음성 합성으로 바꿨고, 험난한 영상 제작이 시작됐다.</p>
+    <div class="panel">
+      <h3>음성: “아버지가방에들어가신다”</h3>
+      <p class="cap">음성 합성(TTS)은 띄어 쓴 대로가 아니라 끊는 자리로 뜻을 만든다. 대본 옆에 끊는 자리(<span class="mono">|</span>)를 따로 적는 파일을 두었다. 눌러 보자.</p>
+      <div class="seg" role="group" aria-label="끊는 자리" id="ttsSeg">
+        <button type="button" data-k="flat" aria-pressed="true">끊지 않음</button>
+        <button type="button" data-k="room" aria-pressed="false">아버지가 | 방에</button>
+        <button type="button" data-k="bag" aria-pressed="false">아버지 | 가방에</button>
+      </div>
+      <div class="tts" aria-live="polite"><span class="pic" id="ttsPic">🤖</span><div><p class="line" id="ttsLine"></p><small id="ttsNote"></small></div></div>
+    </div>
+    <div class="panel">
+      <h3>그림: 캐릭터가 매번 변신한다</h3>
+      <div class="fixes">
+        <div class="fix"><b>코가 두 개</b><span>옆모습 기준 그림으로 앞모습을 그리면 옆 코 + 가운데 코 → 앞모습 기준 그림을 따로 만든다</span></div>
+        <div class="fix"><b>장면마다 집이 바뀜</b><span>통나무집·초가집·기와집 → 장소 배경 판을 먼저 그리고 모든 장면이 그 판을 쓴다</span></div>
+        <div class="fix"><b>돌이 점점 작아짐</b><span>소품 크기·자리가 흔들림 → 소품 기준 그림을 주고, 자리가 정해진 소품은 따로 그려 오려 붙인다</span></div>
+        <div class="fix"><b>두더지가 곰이 됨</b><span>“둥글고 귀엽게”가 곰 몸을 만든다 → 그 동물만의 생김새를 앞에 세게 적는다</span></div>
+      </div>
+      <p class="cap">다시 그리기는 곧 크레딧이다. 편당 그림 호출은 20~45번, 배경 판·기준 그림을 다시 쓰는 편은 15~19번이었다. 실수는 영상 세션의 점검표에 한 줄씩 쌓인다.</p>
+    </div>
+    <div class="panel factory" aria-label="영상 한 편이 앱에 들어가기까지">
+      <h3>두 AI 세션이 나눠 만든다</h3>
+      <div class="step"><span class="who dev">개발 세션</span><span>커리큘럼과 <b>주문서</b>: 주제·나이·학습 목표·성취기준(2022 개정 교육과정 코드). 늘 2편 앞서 주문</span></div>
+      <div class="step"><span class="who vid">영상 세션</span><span>팩트시트 → 대본 → 음성 → 그림·애니 → 합성 → 업로드 → <span class="mono">quiz.json</span></span></div>
+      <div class="step"><span class="who dev">개발 세션</span><span>같은 규칙의 검사기로 확인하고, 셸 명령 한 줄로 운영에 넣음(사람이 화면에 JSON을 붙여 넣지 않게)</span></div>
+      <div class="step"><span class="who me">나</span><span>대본과 그림을 보고 고칠 곳을 짚고, 업로드 버튼을 누른다</span></div>
+      <p class="cap">지금까지 주문서로 만든 영상 25편(곱셈·나눗셈·과학·한국사). 채널에서 가장 오래 본 건 세종대왕 편(평균 2분 23초, 43.9%)이었고, 그래서 한국사 시리즈가 생겼다.</p>
+    </div>
+    <div class="lecture"><b>📘 강의 → 우리 적용 · 노드 1 · 12</b>
+      <ul class="applied">
+        <li><b>데이터 처리 <span class="node">노드 1</span></b><i>→</i><span>남의 자막은 긁지도 저장하지도 않음</span></li>
+        <li><b>한 건의 원가 <span class="node">노드 12</span></b><i>→</i><span>편마다 그림 호출·음성 글자 수를 적어 크레딧이 끝난 뒤 제작비를 셈</span></li>
+      </ul>
+    </div>
+    <div class="learned"><span class="i">💡</span><p>부모에게 일을 맡기는 기능은 나부터 안 쓴다. 귀찮은 일은 만드는 쪽이 미리 해 두어야 하고, 그게 곧 서비스의 차별점이 된다.</p></div>
+  </section>
+
+  <!-- 5 -->
+  <section id="c5" aria-labelledby="h5x">
+    <p class="when">10-20 ~ 11-04 · 노드 2~9·12</p>
+    <h2 id="h5x"><span class="no">5</span>남이 써도 될까</h2>
+    <p>집 밖에서도 써야 했고, 조원 가족도 써 보기로 했다. 라즈베리파이에서 Cloud Run으로 옮기자 배포가 일이 됐다. 솔직히 과정이 너무 복잡해서 거의 AI에게 맡겼다. 대신 <b>운영에 내보내는 버튼만은 사람이 누른다.</b> 에이전트가 운영 배포를 실행하려 하자 Claude Code 자동 모드가 먼저 막았고, 강의의 원칙도 같았다.</p>
+    <div class="panel road" aria-label="배포 길이 길어진 순서">
+      <div class="stop"><span class="d">10-19</span><span>노트북에서 <span class="mono">scp</span> → 파이 재시작</span></div>
+      <div class="stop"><span class="d">10-20</span><span>Cloud Run 첫 배포, 키는 Secret Manager</span></div>
+      <div class="stop"><span class="d">10-22</span><span>PR을 머지하면 GitHub Actions가 배포(키 파일 없이 WIF)</span></div>
+      <div class="stop"><span class="d">10-26</span><span>시험을 UTC·한국 시간 두 번 → staging에만 배포, Dockerfile(사진 글자 읽기 프로그램)</span></div>
+      <div class="stop me"><span class="d">10-26</span><span><b>👤 운영 버튼은 사람이</b>, staging에서 확인한 같은 이미지를 그대로 승격</span></div>
+      <div class="stop"><span class="d">10-29</span><span>블루그린: 새 버전을 트래픽 0%로 띄워 확인 → 100%, 되돌리기 버튼</span></div>
+    </div>
+    <div class="nums">
+      <div class="num"><strong>0 / 2,868</strong><span>배포하는 동안 실패한 요청</span></div>
+      <div class="num"><strong>31초</strong><span>되돌리기 버튼</span></div>
+      <div class="num"><strong>146</strong><span>PR (main 직접 푸시 0)</span></div>
+      <div class="num"><strong>72</strong><span>배포 전 자동 시험</span></div>
+    </div>
+    <p>사용자가 아직 적어서 트래픽 걱정은 와닿지 않았다. 그런데 AI가 계속 짚은 문제가 있었다. <b>콜드 스타트</b>. 버튼을 눌러 보면 바로 보인다.</p>
+    <div class="panel cold">
+      <div class="row"><span class="label">쉬는 동안 켜 둘 서버(최소 인스턴스)</span><div class="seg" role="group" aria-label="최소 인스턴스" id="minSeg"><button type="button" data-v="0" aria-pressed="true">0대</button><button type="button" data-v="1" aria-pressed="false">1대</button></div></div>
+      <div class="row"><button class="go" type="button" id="coldGo">🌙 밤새 쉬고, 아침에 부모가 로그인</button></div>
+      <div class="lane"><span class="nm">서버</span><div class="track" id="tSrv"><div class="fill"></div><span class="txt">대기</span></div></div>
+      <div class="lane"><span class="nm">첫 화면</span><div class="track" id="tA"><div class="fill"></div><span class="txt">—</span></div></div>
+      <div class="lane"><span class="nm">로그인 돌아옴</span><div class="track" id="tB"><div class="fill"></div><span class="txt">—</span></div></div>
+      <p class="coldnote" id="coldNote">Cloud Run은 요청이 없으면 서버를 0대로 줄여 돈을 아낀다. 다음 요청이 오면 컨테이너를 새로 켜는데, 그 몇 초가 콜드 스타트다.</p>
+    </div>
+    <div class="lecture"><b>📘 강의 → 우리 적용 · 노드 2~9 · 12</b>
+      <ul class="applied">
+        <li><b>Cloud Run · 시크릿 <span class="node">노드 2</span></b><i>→</i><span>파이에서 옮김, 키는 Secret Manager에</span></li>
+        <li><b>인스턴스 · 한도 <span class="node">노드 3</span></b><i>→</i><span>최대 1대(데이터를 메모리에 둬서), 가족별 하루 검색·AI 상한</span></li>
+        <li><b>CI/CD · staging <span class="node">노드 4·5</span></b><i>→</i><span>머지하면 시험(UTC·한국) 뒤 staging에. “새벽 기록이 어제로” 버그를 CI가 잡음</span></li>
+        <li><b>Dockerfile · 이미지 승격 <span class="node">노드 6·7</span></b><i>→</i><span>글자 읽기 프로그램 설치, staging 이미지를 그대로 운영에</span></li>
+        <li><b>무중단 배포 <span class="node">노드 8·9</span></b><i>→</i><span>블루그린 + 되돌리기 버튼</span></li>
+        <li><b>결제 · 공격해 보기 <span class="node">노드 12</span></b><i>→</i><span>이용권 테스트 결제. 동시 요청 10개가 모두 AI를 부름 → 한 번에 하나, 가입 이용권 0개</span></li>
+      </ul>
+    </div>
+    <p class="oops"><b>걸린 곳</b> 가입이 어렵다는 말을 들었다(초대 코드 → 승인 → Google 로그인 → 기기 연결). 11-01부터는 우리 집 이름 + Google 로그인으로 바로 가입하고, 체험 코드로는 로그인 없이 24시간 써 볼 수 있다.</p>
+    <div class="learned"><span class="i">💡</span><p>AI에게 맡기되, 되돌리기 어려운 버튼은 사람이 누른다. 그리고 남이 쓰기 시작하면 문제의 종류가 바뀐다. 기능보다 콜드 스타트, 남용, 가입의 문턱이 먼저 온다.</p></div>
+  </section>
+
+  <!-- 6 -->
+  <section id="c6" aria-labelledby="h6x">
+    <p class="when">11-05 ~ 지금 · 노드 13·14</p>
+    <h2 id="h6x"><span class="no">6</span>지금 오르는 산</h2>
+    <p>노드 13·14에서 Expo로 아이 앱을 만들었다. 웹 화면을 앱으로 감싸고, 우리 주소가 아니면 열지 않는다. PC에서도 YouTube 끝 화면을 누르면 밖으로 나가던 게 계기였다. 빌드는 초록이었는데 아이 폰은 Family Link가 설치를 막았고(“IT 관리자에게 문의”), 기기 설정에서 부모가 허용해야 했다.</p>
+    <div class="lecture"><b>📘 강의 → 우리 적용 · 노드 13·14 모바일 앱</b>
+      <ul class="applied">
+        <li><b>Expo · Expo Go</b><i>→</i><span>아이 앱은 우리 주소만. Google 로그인이 안 돼서(Firebase 필요) 앱 안 부모 화면은 PIN</span></li>
+        <li><b>EAS 빌드 · 스토어</b><i>→</i><span>APK 빌드. 테스터 12명 × 14일이 어려워 우선 가입한 부모에게만 링크로</span></li>
+      </ul>
+    </div>
+    <div class="peaks">
+      <div class="peak done"><span class="s">✅</span><span><b>홈페이지</b> <a href="https://tyutyukids.com">tyutyukids.com</a>과 개인정보처리방침(테스트 기간판): 받는 정보·보관 기간·맡기는 곳(나라)을 코드에서 하나씩 확인해 적었다</span></div>
+      <div class="peak done"><span class="s">✅</span><span><b>📲 홈 화면 설치 버튼</b>: 가입만 해서는 바로가기가 안 생겨서</span></div>
+      <div class="peak"><span class="s">⛰</span><span><b>Google Play</b>: 테스터 12명 × 14일. 사업자 등록 뒤 조직 계정이면 이 조건이 없다. 그 전까지는 가입한 부모에게만 APK 링크</span></div>
+      <div class="peak"><span class="s">⛰</span><span><b>아이 관련 약관</b>: 만 14세 미만 법정대리인 동의, 이용약관, 사업자 등록과 결제 계약. 지금은 테스트 기간이다</span></div>
+      <div class="peak"><span class="s">⛰</span><span><b>채널 품질</b>: 영상 제작을 Claude 영상 도구로 키우려면 혼자보다 팀 프로젝트가 맞다</span></div>
+      <div class="peak"><span class="s">🕳</span><span><b>남은 틈</b>: “자석은 어디에 써?”처럼 퀴즈와 다른 말로 물으면 정답이 섞여도 못 막는다(3장 마지막 질문). 아이 앱에서 YouTube로 나가는 길도 하나 남았다</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h7x">
+    <h2 id="h7x"><span class="no">💡</span>17일이 남긴 것</h2>
+    <div class="big">
+      <div class="bigone"><span class="n">①</span><div><h3>나만 쓰는 앱과 남이 쓰는 앱은 다른 앱이다</h3><p>기능은 그대로인데 이름, 약관, 개인정보, 콜드 스타트, 남용, 가입 문턱이 새로 생겼다. 강의의 노드 대부분이 이 차이를 메우는 일이었다.</p></div></div>
+      <div class="bigone"><span class="n">②</span><div><h3>지시문은 바람, 코드는 약속</h3><p>AI에게 “하지 마”라고 쓰는 것과 코드가 막는 것은 다르다. 꼭 지켜야 할 것은 코드와 숫자로 확인한다.</p></div></div>
+      <div class="bigone"><span class="n">③</span><div><h3>기준은 먼저, 버튼은 사람이</h3><p>내보낼 기준은 결과를 보기 전에 적고, 운영에 나가는 버튼은 사람이 누른다. AI가 대부분을 해도 이 두 가지는 내 몫으로 남겼다.</p></div></div>
+      <div class="bigone"><span class="n">④</span><div><h3>배포는 사람 손에 닿아야 끝난다</h3><p>초록 체크는 시작일 뿐이다. 아이 폰에 깔리고, 부모가 가입하고, 방침 글이 열려야 비로소 배포다.</p></div></div>
+    </div>
+  </section>
+
+  <footer>
+    <p>🏠 <a href="https://tyutyukids.com">tyutyukids.com</a> · 📺 <a href="https://www.youtube.com/@TyuTyuKids">@TyuTyuKids</a> · 📑 <a href="https://github.com/mjkimlunar/tyutyukids-quest08">메인 퀘스트 08 리포트</a> · ⬅ <a href="/blog/kids-tube-wrapup/">지난 글: 라즈베리파이에서 블루그린까지(10-30)</a></p>
+    <p>모두의연구소 AI 서비스 인 프로덕션 · 노드 1 설계 → 2~9 배포 → 10·11 Langfuse → 12 결제 → 13·14 모바일 앱 → 15 메인 퀘스트 08</p>
+  </footer>
+</main>
+
+<script>
+(function () {
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  function pressOnly(group, btn) { group.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b === btn)); }); }
+
+  // 3장: 세 겹 문
+  var state = { member: false, parent: false, source: false };
+  var reasons = { member: '운영자가 이 가족의 멤버십을 켜지 않았어요', parent: '부모가 아이 설정에서 켜지 않았어요', source: '질문하기 채널이 아니거나 영상 자료가 없어요' };
+  var askBtn = document.getElementById('askBtn');
+  var whyOff = document.getElementById('whyOff');
+  function paintGates() {
+    var off = ['member', 'parent', 'source'].filter(function (k) { return !state[k]; });
+    askBtn.hidden = off.length > 0;
+    whyOff.hidden = off.length === 0;
+    if (off.length) whyOff.textContent = '버튼 없음: ' + reasons[off[0]] + (off.length > 1 ? ' (외 ' + (off.length - 1) + '개)' : '');
+  }
+  document.querySelectorAll('#switches .sw').forEach(function (b) {
+    b.addEventListener('click', function () {
+      state[b.dataset.k] = !state[b.dataset.k];
+      b.setAttribute('aria-pressed', String(state[b.dataset.k]));
+      paintGates();
+    });
+  });
+  paintGates();
+
+  // 3장: 가드레일(out은 lib/ask.js guard() → limitSentences() 실행 결과, 2026-11-10)
+  var CASES = [
+    { label: '🔢 퀴즈 정답 캐묻기', video: '7단과 9단 (퀴즈 1번 정답 “7 × 2”)', q: '2주일은 며칠이야?',
+      raw: '2주일은 14일이에요! 일주일이 7일이니까 7 × 2를 하면 돼요.', rawCut: true,
+      out: '정답은 알려 줄 수 없어요. 영상 48초쯤을 다시 보면 직접 찾을 수 있어요! 🙂',
+      tag: ['block', '막음 · quiz'], why: '정답 보기가 식(7 × 2)이면 그 값(14)이 답에 있는지 본다. 막을 때는 그 문제의 근거 시각으로 다시 볼 곳을 알려 준다.' },
+    { label: '🧮 숙제 계산', video: '7단과 9단', q: '37 곱하기 8은 뭐야?',
+      raw: '37 × 8은 296이에요! 30 × 8 = 240, 7 × 8 = 56을 더하면 돼요.', rawCut: true,
+      out: '37 × 8은 37을 30과 7로 나눠서, 30 × 8과 7 × 8을 따로 구한 다음 더해 봐요. 직접 해 보고 엄마·아빠와 답을 맞춰 봐요! 🙂',
+      tag: ['block', '바꿈 · arith'], why: '질문의 식 답(296)이 답에 있고 영상 대본에는 없으면, 답 대신 푸는 순서만 준다. 마지막 값은 말하지 않는다.' },
+    { label: '🙋 이름 말하기', video: '자석은 무엇을 끌어당길까', q: '나는 김하늘이야. 자석은 왜 쇠에 붙어?',
+      raw: [['하늘이구나, 반가워요!', true], ['이름은 기억해 둘게요.', true], ['자석은 쇠로 된 물건을 끌어당기는 힘이 있어서 붙어요.', false]],
+      out: '그런 건 말하지 않아도 돼요. 자석은 쇠로 된 물건을 끌어당기는 힘이 있어서 붙어요.',
+      tag: ['block', '뺌 · private'], why: '아이가 말한 이름(김하늘·하늘)이 든 문장과 “기억해 둘게요” 같은 약속을 뺀다. 첫 지시문은 두 번 모두 이름을 불렀다.' },
+    { label: '📏 길게 답하기', video: '흐르는 물이 땅의 모양을 바꿔요', q: '강은 어디서 시작해?',
+      raw: [['강은 높은 산에서 시작해요.', false], ['산에 내린 비가 모여 작은 물줄기가 돼요.', false], ['물줄기들이 모이면 점점 큰 강이 돼요.', false], ['그리고 강은 바다까지 흘러가요.', true], ['정말 긴 여행이죠?', true]],
+      out: '강은 높은 산에서 시작해요. 산에 내린 비가 모여 작은 물줄기가 돼요. 물줄기들이 모이면 점점 큰 강이 돼요.',
+      tag: ['pass', '통과 · 3문장으로'], why: '막을 것은 없고 앞 3문장만 남긴다(메인 퀘스트 08).' },
+    { label: '🕳 못 막는 경우', video: '자석은 무엇을 끌어당길까 (퀴즈 5번 정답 “냉장고 문”)', q: '자석은 어디에 써?',
+      raw: [['자석은 우리 주변 곳곳에 쓰여요.', false], ['냉장고 문에 붙이는 자석이 있어요.', false], ['필통 뚜껑에도 자석이 들어 있어요.', false], ['나침반의 바늘도 자석이에요.', true], ['정말 신기하죠?', true]],
+      out: '자석은 우리 주변 곳곳에 쓰여요. 냉장고 문에 붙이는 자석이 있어요. 필통 뚜껑에도 자석이 들어 있어요.',
+      tag: ['miss', '통과 · 그런데'], miss: true, why: '퀴즈 5번 “집 안에서 자석을 쓰는 곳은?”의 정답이 그대로 갔다. 질문이 퀴즈 문장과 덜 닮아서 코드가 퀴즈를 묻는 말로 보지 않았다. 다음에 고칠 틈.' }
+  ];
+  var casesEl = document.getElementById('cases');
+  var chat = document.getElementById('chat');
+  CASES.forEach(function (c, i) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = c.label;
+    b.addEventListener('click', function () { pick(i); });
+    casesEl.appendChild(b);
+  });
+  function pick(i) {
+    var c = CASES[i];
+    casesEl.querySelectorAll('button').forEach(function (b, j) { b.setAttribute('aria-pressed', String(j === i)); });
+    var raw = Array.isArray(c.raw)
+      ? '<div class="b">' + c.raw.map(function (p) { return p[1] ? '<span class="gone">' + esc(p[0]) + '</span>' : esc(p[0]); }).join(' ') + '</div>'
+      : '<div class="b' + (c.rawCut ? ' cut' : '') + '">' + esc(c.raw) + '</div>';
+    chat.innerHTML =
+      '<div class="msg kid"><span class="who">아이 · ' + esc(c.video) + '</span><div class="b">' + esc(c.q) + '</div></div>' +
+      '<div class="msg raw"><span class="who">모델이 쓴 답 (아이에게 안 감)</span>' + raw + '</div>' +
+      '<div class="gate"><span class="tag ' + c.tag[0] + '">' + esc(c.tag[1]) + '</span></div>' +
+      '<div class="msg out"><span class="who">아이에게 간 답</span><div class="b">' + esc(c.out) + '</div></div>' +
+      '<p class="verdict' + (c.miss ? ' miss' : '') + '">' + esc(c.why) + '</p>';
+  }
+  pick(0);
+
+  // 4장: 끊어 읽기
+  var TTS = {
+    flat: { pic: '🤖', line: '아버지가방에들어가신다', note: '끊는 자리가 없으면 기계가 아무 데서나 숨을 쉰다. 듣는 아이는 방인지 가방인지 모른다.' },
+    room: { pic: '🚪', line: '아버지가<i>|</i>방에 들어가신다', note: '대본: lines_tts.txt에 “아버지가 | 방에 들어가신다”. 아버지가 방으로 들어간다.' },
+    bag: { pic: '👜', line: '아버지<i>|</i>가방에 들어가신다', note: '같은 글자, 끊는 자리만 다르다. 아버지가 가방 속으로?! 자막 파일은 그대로 두고 음성용 파일에만 끊는 자리를 적는다.' }
+  };
+  var ttsSeg = document.getElementById('ttsSeg');
+  function ttsShow(k) {
+    var t = TTS[k];
+    document.getElementById('ttsPic').textContent = t.pic;
+    document.getElementById('ttsLine').innerHTML = t.line.split('<i>|</i>').map(esc).join('<i>|</i>');
+    document.getElementById('ttsNote').textContent = t.note;
+  }
+  ttsSeg.querySelectorAll('button').forEach(function (b) {
+    b.addEventListener('click', function () { pressOnly(ttsSeg, b); ttsShow(b.dataset.k); });
+  });
+  ttsShow('flat');
+
+  // 5장: 콜드 스타트
+  var minSeg = document.getElementById('minSeg');
+  var minInst = 0;
+  minSeg.querySelectorAll('button').forEach(function (b) {
+    b.addEventListener('click', function () { pressOnly(minSeg, b); minInst = Number(b.dataset.v); reset(); });
+  });
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var timers = [];
+  function setT(id, pct, text, cls) {
+    var t = document.getElementById(id);
+    t.className = 'track' + (cls ? ' ' + cls : '');
+    var f = t.querySelector('.fill');
+    f.style.transition = reduce ? 'none' : 'width 0.6s ease';
+    f.style.width = pct + '%';
+    t.querySelector('.txt').textContent = text;
+  }
+  function later(ms, fn) { timers.push(setTimeout(fn, reduce ? 0 : ms)); }
+  function reset() {
+    timers.forEach(clearTimeout); timers = [];
+    setT('tSrv', 0, minInst ? '🔥 1대가 밤새 켜져 있음' : '🧊 0대 (쉬는 중, 요금 0)');
+    setT('tA', 0, '—'); setT('tB', 0, '—');
+    document.getElementById('coldNote').textContent = minInst
+      ? '최소 1대: 쉬는 동안에도 서버 1대 요금이 나간다(지금은 체험 크레딧). 대신 아침 첫 요청도 바로 답한다.'
+      : 'Cloud Run은 요청이 없으면 서버를 0대로 줄여 돈을 아낀다. 다음 요청이 오면 컨테이너를 새로 켜는데, 그 몇 초가 콜드 스타트다.';
+    document.getElementById('coldGo').disabled = false;
+  }
+  document.getElementById('coldGo').addEventListener('click', function () {
+    reset();
+    this.disabled = true;
+    if (minInst) {
+      setT('tSrv', 100, '🔥 이미 켜져 있음', 'ok');
+      later(300, function () { setT('tA', 100, '✅ 바로 첫 화면', 'ok'); });
+      later(700, function () { setT('tB', 100, '✅ 로그인 완료', 'ok'); });
+      later(900, function () { document.getElementById('coldNote').textContent = '10-29부터 운영은 최소 1대. 요금이 조금 들지만 첫 손님이 기다리지 않는다. 연습용 staging은 0대 그대로.'; document.getElementById('coldGo').disabled = false; });
+      return;
+    }
+    setT('tSrv', 35, '⏳ 컨테이너 켜는 중…');
+    setT('tA', 35, '⏳ 기다리는 중…');
+    later(700, function () { setT('tB', 100, '❌ 429 Rate exceeded', 'bad'); });
+    later(1400, function () { setT('tSrv', 100, '🔥 켜짐 (몇 초 걸림)', 'ok'); setT('tA', 100, '✅ 몇 초 늦게 첫 화면', 'ok'); });
+    later(1700, function () {
+      document.getElementById('coldNote').textContent = '실제로 있었던 일: 서버가 켜지는 사이 Google 로그인이 돌아왔는데, 최대 1대라 받아 줄 서버가 없어 429로 거절됐다. 새로고침하면 됐지만 첫인상으로는 나쁘다. 최소 1대로 바꿔 보자.';
+      document.getElementById('coldGo').disabled = false;
+    });
+  });
+  reset();
+})();
+</script>
+</body>
+</html>

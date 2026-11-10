@@ -93,6 +93,12 @@
   .rename { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-family: var(--display); font-size: 1.4rem; }
   .rename s { color: var(--muted); text-decoration-color: var(--bad); text-decoration-thickness: 3px; }
   .rename b { font-weight: 400; color: var(--accent); }
+  .steps-name { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .sn { display: grid; gap: 2px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); min-width: 0; }
+  .sn .w { font-family: var(--display); font-size: 1.15rem; }
+  .sn .w s { color: var(--muted); text-decoration-color: var(--bad); text-decoration-thickness: 2px; }
+  .sn .w b { font-weight: 400; color: var(--accent); }
+  .sn small { font-size: 0.78rem; color: var(--muted); }
 
   /* 3장: 대화 · 세 겹 문 · 가드레일 */
   .talk { display: grid; gap: 8px; }
@@ -165,6 +171,13 @@
   .step .who.dev { background: var(--person-bg); border-color: var(--person); }
   .step .who.vid { background: var(--course-bg); border-color: var(--course); }
   .step .who.me { background: var(--card); border-color: var(--accent); }
+  .ba { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+  @media (max-width: 520px) { .ba { grid-template-columns: 1fr; } }
+  .ba figure { margin: 0; display: grid; gap: 4px; min-width: 0; }
+  .ba img { display: block; width: 100%; max-width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); }
+  .ba figure:first-child img { border: 2px solid var(--bad); }
+  .ba figure:last-child img { border: 2px solid var(--ok); }
+  .ba figcaption { font-family: var(--mono); font-size: 0.76rem; color: var(--muted); }
   .fixes { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
   .fix { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 0.88rem; display: grid; gap: 4px; }
   .fix b { font-size: 0.93rem; }
@@ -184,6 +197,30 @@
   .track.ok .fill { background: var(--ok-bg); border-color: var(--ok); }
   .track.bad .fill { background: var(--bad-bg); border-color: var(--bad); }
   .coldnote { font-size: 0.9rem; padding: 10px 12px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); }
+  /* 배포 구조도(지난 글과 같은 SVG 엔진): 칸·화살표를 상태표대로 그리고 커밋 점이 길을 따라 움직인다 */
+  .diagram { overflow-x: auto; overscroll-behavior-x: contain; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+  .diagram svg { display: block; width: 760px; max-width: none; height: auto; font-family: var(--body); }
+  @media (min-width: 800px) { .diagram svg { width: 100%; } }
+  .diagram .nd rect { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+  .diagram .nd.person rect { fill: var(--person-bg); stroke: var(--person); }
+  .diagram .nd.new rect { stroke: var(--accent); stroke-width: 3; }
+  .diagram .nd.off rect { stroke-dasharray: 3 3; opacity: 0.7; }
+  .diagram .nd .t { font-size: 13px; font-weight: 700; fill: var(--ink); }
+  .diagram .nd .s { font-size: 10.5px; fill: var(--muted); }
+  .diagram .ed { fill: none; stroke: var(--muted); stroke-width: 1.6; marker-end: url(#arr); }
+  .diagram .ed.person { stroke: var(--person); stroke-dasharray: 6 4; }
+  .diagram .ed.traffic { stroke: var(--accent); stroke-width: 3.2; }
+  .diagram .ed.off { stroke-dasharray: 2 4; opacity: 0.7; }
+  .diagram .lb { font-size: 10.5px; fill: var(--muted); paint-order: stroke; stroke: var(--card); stroke-width: 4px; stroke-linejoin: round; }
+  .diagram .lb.hot { fill: var(--accent); font-weight: 700; }
+  .diagram .tok { fill: var(--accent); stroke: var(--card); stroke-width: 2; }
+  .diagram .note { font-size: 11px; fill: var(--muted); }
+  @media (prefers-reduced-motion: no-preference) { .diagram .nd.new { animation: pop 0.35s ease-out; transform-box: fill-box; transform-origin: center; } }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; color: var(--muted); font-size: 0.82rem; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); background: var(--bg); }
+  .legend i.p { background: var(--person-bg); border-color: var(--person); }
+  .legend i.n { box-shadow: 0 0 0 2px var(--accent) inset; }
+  .archnote { font-size: 0.9rem; color: var(--muted); }
   .road { display: grid; gap: 6px; }
   .road .stop { display: grid; grid-template-columns: 58px 1fr; gap: 10px; align-items: start; font-size: 0.9rem; }
   .road .stop .d { font-family: var(--mono); font-size: 0.76rem; color: var(--muted); padding-top: 2px; }
@@ -244,7 +281,16 @@
       <span class="box person">👤 내 노트북</span><span class="arr">→ scp</span><span class="box hot">🍓 라즈베리파이 · 포트 3010</span><span class="arr">←</span><span class="box person">👧 아이 태블릿 · Tailscale tag:kid</span>
     </div>
     <p>이름은 <b>키즈 튜브(kids-tube)</b>. 정체성은 분명했는데, 나중에 YouTube 브랜드 규정에 걸렸다. “Tube”처럼 YouTube를 떠올리게 하는 이름은 쓰지 말라는 것.</p>
-    <div class="rename" aria-label="이름 바꾸기"><s>키즈 튜브</s><span class="arr">→</span><b>튜튜키즈</b><span class="cap">(10-30, 저장소·서버 주소는 kids-tube 그대로)</span></div>
+    <div class="rename" aria-label="이름 바꾸기"><s>키즈 튜브</s><span class="arr">→</span><b>튜튜키즈</b></div>
+    <div class="steps-name" aria-label="튜튜가 된 이유">
+      <div class="sn"><span class="w">키즈 튜<s>브</s></span><small>“튜브”에서 “브”를 뺌</small></div>
+      <span class="arr">→</span>
+      <div class="sn"><span class="w"><b>튜</b> 키즈</span><small>“튜”를 앞자리로</small></div>
+      <span class="arr">→</span>
+      <div class="sn"><span class="w"><b>튜튜</b>키즈</span><small>“튜”를 두 번</small></div>
+      <span class="arr">→</span>
+      <div class="sn"><span class="w">TyuTyu Kids</span><small>영문 스펠링도 Tube와 다르게</small></div>
+    </div>
     <div class="lecture"><b>📘 강의 → 우리 적용 · 노드 1 AI 기능을 서비스로 설계하기</b>
       <ul class="applied">
         <li><b>사용 맥락 · 채널</b><i>→</i><span>부모 폰(관리)과 아이 기기(시청) 두 화면으로</span></li>
@@ -325,13 +371,13 @@
     </div>
     <div class="panel">
       <h3>그림: 캐릭터가 매번 변신한다</h3>
-      <div class="fixes">
-        <div class="fix"><b>코가 두 개</b><span>옆모습 기준 그림으로 앞모습을 그리면 옆 코 + 가운데 코 → 앞모습 기준 그림을 따로 만든다</span></div>
-        <div class="fix"><b>장면마다 집이 바뀜</b><span>통나무집·초가집·기와집 → 장소 배경 판을 먼저 그리고 모든 장면이 그 판을 쓴다</span></div>
-        <div class="fix"><b>돌이 점점 작아짐</b><span>소품 크기·자리가 흔들림 → 소품 기준 그림을 주고, 자리가 정해진 소품은 따로 그려 오려 붙인다</span></div>
-        <div class="fix"><b>두더지가 곰이 됨</b><span>“둥글고 귀엽게”가 곰 몸을 만든다 → 그 동물만의 생김새를 앞에 세게 적는다</span></div>
+      <div class="cases" role="group" aria-label="그림 실수 고르기" id="baCases"></div>
+      <div class="ba" aria-live="polite">
+        <figure><img id="baBefore" src="shots/nose-before.jpg" alt="" width="420" height="360"><figcaption>❌ 고치기 전</figcaption></figure>
+        <figure><img id="baAfter" src="shots/nose-after.jpg" alt="" width="420" height="364"><figcaption>✅ 고친 뒤</figcaption></figure>
       </div>
-      <p class="cap">다시 그리기는 곧 크레딧이다. 편당 그림 호출은 20~45번, 배경 판·기준 그림을 다시 쓰는 편은 15~19번이었다. 실수는 영상 세션의 점검표에 한 줄씩 쌓인다.</p>
+      <p class="verdict" id="baWhy"></p>
+      <p class="cap">그 밖에도: 같은 텃밭의 집이 장면마다 통나무집·초가집·기와집으로 바뀜(→ 장소 배경 판을 먼저 그리기), 돌이 장면마다 작아짐(→ 소품 기준 그림, 자리가 정해진 소품은 오려 붙이기). 다시 그리기는 곧 크레딧이라 편당 그림 호출은 20~45번, 배경 판·기준 그림을 다시 쓰는 편은 15~19번이었다. 실수는 영상 세션의 점검표에 한 줄씩 쌓인다. 그림은 외장 SSD에 남겨 둔 실제 초안이다.</p>
     </div>
     <div class="panel factory" aria-label="영상 한 편이 앱에 들어가기까지">
       <h3>두 AI 세션이 나눠 만든다</h3>
@@ -355,19 +401,15 @@
     <p class="when">10-20 ~ 11-04 · 노드 2~9·12</p>
     <h2 id="h5x"><span class="no">5</span>남이 써도 될까</h2>
     <p>집 밖에서도 써야 했고, 조원 가족도 써 보기로 했다. 라즈베리파이에서 Cloud Run으로 옮기자 배포가 일이 됐다. 솔직히 과정이 너무 복잡해서 거의 AI에게 맡겼다. 대신 <b>운영에 내보내는 버튼만은 사람이 누른다.</b> 에이전트가 운영 배포를 실행하려 하자 Claude Code 자동 모드가 먼저 막았고, 강의의 원칙도 같았다.</p>
-    <div class="panel road" aria-label="배포 길이 길어진 순서">
-      <div class="stop"><span class="d">10-19</span><span>노트북에서 <span class="mono">scp</span> → 파이 재시작</span></div>
-      <div class="stop"><span class="d">10-20</span><span>Cloud Run 첫 배포, 키는 Secret Manager</span></div>
-      <div class="stop"><span class="d">10-22</span><span>PR을 머지하면 GitHub Actions가 배포(키 파일 없이 WIF)</span></div>
-      <div class="stop"><span class="d">10-26</span><span>시험을 UTC·한국 시간 두 번 → staging에만 배포, Dockerfile(사진 글자 읽기 프로그램)</span></div>
-      <div class="stop me"><span class="d">10-26</span><span><b>👤 운영 버튼은 사람이</b>, staging에서 확인한 같은 이미지를 그대로 승격</span></div>
-      <div class="stop"><span class="d">10-29</span><span>블루그린: 새 버전을 트래픽 0%로 띄워 확인 → 100%, 되돌리기 버튼</span></div>
-    </div>
-    <div class="nums">
-      <div class="num"><strong>0 / 2,868</strong><span>배포하는 동안 실패한 요청</span></div>
-      <div class="num"><strong>31초</strong><span>되돌리기 버튼</span></div>
-      <div class="num"><strong>146</strong><span>PR (main 직접 푸시 0)</span></div>
-      <div class="num"><strong>72</strong><span>배포 전 자동 시험</span></div>
+    <div class="panel">
+      <div class="seg" role="group" aria-label="배포 구조" id="archSeg">
+        <button type="button" data-k="S0" aria-pressed="true">🍓 처음 (강의 전)</button>
+        <button type="button" data-k="S9" aria-pressed="false">☁️ 마지막 (10-29 블루그린부터 지금까지)</button>
+      </div>
+      <div class="diagram"><svg id="dSvg" role="img" aria-label="배포 구조 그림. 커밋 점이 길을 따라 움직인다"></svg></div>
+      <div class="legend"><span><i class="p"></i>사람</span><span><i></i>Actions · Cloud Run</span><span><i class="n"></i>마지막에 생긴 칸</span><span>● 커밋이 가는 길</span></div>
+      <p class="archnote" id="archNote"></p>
+      <p class="cap">지난 글(10-30)의 날짜별 구조도에서 처음과 마지막 장면만 가져왔다. 휴대폰에서는 옆으로 밀어 본다.</p>
     </div>
     <p>사용자가 아직 적어서 트래픽 걱정은 와닿지 않았다. 그런데 AI가 계속 짚은 문제가 있었다. <b>콜드 스타트</b>. 버튼을 눌러 보면 바로 보인다.</p>
     <div class="panel cold">
@@ -517,6 +559,111 @@
     b.addEventListener('click', function () { pressOnly(ttsSeg, b); ttsShow(b.dataset.k); });
   });
   ttsShow('flat');
+
+  // 4장: 그림 고치기 전·후(외장 SSD 보관본의 실제 초안을 줄인 사본)
+  var BA = [
+    { k: 'nose', label: '🦔 코가 둘', w: 420, hb: 360, ha: 364, before: '가운데 코와 얼굴 왼쪽 끝의 까만 동그라미로 코가 둘처럼 보이는 고슴도치(빨간 동그라미 표시)', after: '코가 가운데 하나인 고슴도치',
+      why: '나눗셈 1편. 얼굴 옆에 든 앞발 끝이 까만 동그라미로 그려져, 가운데 코와 함께 코가 둘처럼 보였다(빨간 동그라미). → “앞을 보고 가운데 작은 코 하나, 앞발은 얼굴에서 멀리”를 처음부터 적고, 앞모습 기준 그림을 따로 만들었다.' },
+    { k: 'mole', label: '🐻 두더지가 곰', before: '둥근 머리와 짧은 주둥이로 곰처럼 그려진 두더지', after: '길고 뾰족한 주둥이의 옆모습 두더지',
+      why: '자석 편 기준 그림. “둥글고 귀엽게”를 많이 쓰니 곰 몸이 됐다(“곰 같은데”). → “곰이 아니라 두더지”, 길고 뾰족한 주둥이, 귀 없음을 앞에 세게 적고, 특징이 잘 보이는 옆모습으로 다시 그렸다.' },
+    { k: 'basket', label: '🧺 바구니가 둘', before: '바구니가 두 개만 보이는 장면', after: '바구니 세 개가 다 보이는 장면',
+      why: '나눗셈 1편. 바구니 수가 곧 문제인데, 캐릭터가 바구니 자리에 서서 두 개만 보였다. → “바구니 왼쪽 빈 풀밭에, 바구니는 꼭 세 개”를 처음부터 적는다.' },
+    { k: 'sky', label: '🎨 혼자 노을', before: '같은 들판인데 노을빛으로 그려진 장면', after: '다른 장면과 같은 하늘의 들판',
+      why: '곱셈 5편. 같은 들판인데 이 장면만 노을빛이고, 얼굴도 옆모습이었다. → 장소 배경 판과 앞모습 기준 그림에 맞춰 다시 그렸다.' }
+  ];
+  var baCases = document.getElementById('baCases');
+  BA.forEach(function (c) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = c.label;
+    b.addEventListener('click', function () { pressOnly(baCases, b); baShow(c); });
+    baCases.appendChild(b);
+  });
+  function baShow(c) {
+    var a = document.getElementById('baBefore'), z = document.getElementById('baAfter');
+    a.src = 'shots/' + c.k + '-before.jpg'; a.alt = '고치기 전: ' + c.before;
+    z.src = 'shots/' + c.k + '-after.jpg'; z.alt = '고친 뒤: ' + c.after;
+    var size = c.w ? [c.w, c.hb, c.ha] : c.k === 'mole' ? [420, 476, 506] : [640, 357, 357];
+    a.width = z.width = size[0]; a.height = size[1]; z.height = size[2];
+    document.getElementById('baWhy').textContent = c.why;
+  }
+  pressOnly(baCases, baCases.querySelector('button'));
+  baShow(BA[0]);
+
+  // 5장: 처음·마지막 배포 구조(지난 글 kids-tube-wrapup의 makeDiagram·STAGES S0·S9를 그대로, 숫자만 뺌)
+  function makeDiagram(svg, viewW) {
+    var NS = 'http://www.w3.org/2000/svg';
+    var W = 130, H = 56;
+    var C = [20, 190, 360, 530, 700], R = [20, 130, 240];
+    var POS = { pc: [C[0], R[0]], gh: [C[0], R[1]], act: [C[1], R[1]], img: [C[2], R[1]], stg: [C[2], R[0]], ok: [C[3], R[1]], blue: [C[3], R[0]], green: [C[4], R[0]], fam: [C[4], R[2]], rb: [C[2], R[2]], prev: [C[3], R[2]], pi: [C[3], R[0]] };
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function el(t, a) { var e = document.createElementNS(NS, t); for (var k in a) e.setAttribute(k, a[k]); return e; }
+    svg.setAttribute('viewBox', '0 0 ' + (viewW || 850) + ' 322');
+    var defs = el('defs', {});
+    defs.innerHTML = '<marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>';
+    svg.append(defs);
+    var gE = el('g', { style: 'color: var(--muted)' }), gN = el('g', {}), gL = el('g', {}), gT = el('g', {});
+    svg.append(gE, gN, gL, gT);
+    function anchor(a, b) {
+      var ax = POS[a][0], ay = POS[a][1], bx = POS[b][0], by = POS[b][1];
+      if (bx >= ax + W) return [[ax + W, ay + H / 2], [bx, by + H / 2]];
+      if (bx + W <= ax) return [[ax, ay + H / 2], [bx + W, by + H / 2]];
+      if (by > ay) return [[ax + W / 2, ay + H], [bx + W / 2, by]];
+      return [[ax + W / 2, ay], [bx + W / 2, by + H]];
+    }
+    function show(st) {
+      gE.textContent = ''; gN.textContent = ''; gL.textContent = ''; gT.textContent = '';
+      Object.keys(st.nodes).forEach(function (id) {
+        var n = st.nodes[id], x = POS[id][0], y = POS[id][1];
+        var g = el('g', { 'class': 'nd' + (n.kind ? ' ' + n.kind : '') + (n.isNew ? ' new' : '') });
+        g.append(el('rect', { x: x, y: y, width: W, height: H, rx: 10 }));
+        var t = el('text', { x: x + 10, y: y + 20, 'class': 't' }); t.textContent = n.t; g.append(t);
+        if (n.s) n.s.split('|').forEach(function (line, k) { var s = el('text', { x: x + 10, y: y + 36 + k * 13, 'class': 's' }); s.textContent = line; g.append(s); });
+        gN.append(g);
+      });
+      st.edges.forEach(function (e) {
+        var p = anchor(e[0], e[1]);
+        gE.append(el('path', { d: 'M' + p[0][0] + ' ' + p[0][1] + ' L' + p[1][0] + ' ' + p[1][1], 'class': 'ed' + (e[3] ? ' ' + e[3] : '') }));
+        if (e[2]) {
+          var dx = Math.abs(p[0][0] - p[1][0]), dy = Math.abs(p[0][1] - p[1][1]);
+          var horizontal = dy < 2, vertical = dx < 2;
+          if (horizontal && dx < e[2].length * 11 + 12) return;
+          var mx = (p[0][0] + p[1][0]) / 2, my = (p[0][1] + p[1][1]) / 2;
+          var lb = el('text', { x: vertical ? mx + 7 : mx, y: vertical ? my + 4 : my - 7, 'text-anchor': vertical ? 'start' : 'middle', 'class': 'lb' + (e[3] === 'traffic' ? ' hot' : '') });
+          lb.textContent = e[2]; gL.append(lb);
+        }
+      });
+      if (st.note) { var nt = el('text', { x: 20, y: 314, 'class': 'note' }); nt.textContent = st.note; gL.append(nt); }
+      if (st.path && st.path.length > 1 && !reduced) {
+        var d = '';
+        for (var i = 0; i < st.path.length - 1; i++) {
+          var seg = anchor(st.path[i], st.path[i + 1]);
+          d += (i ? ' L' : 'M') + seg[0][0] + ' ' + seg[0][1] + ' L' + seg[1][0] + ' ' + seg[1][1];
+        }
+        var c = el('circle', { r: 6, 'class': 'tok' });
+        c.append(el('animateMotion', { dur: (st.path.length * 1.1) + 's', repeatCount: 'indefinite', path: d }));
+        gT.append(c);
+      }
+    }
+    return { show: show };
+  }
+  var N = function (t, s, kind, isNew) { return { t: t, s: s || '', kind: kind || '', isNew: !!isNew }; };
+  var STAGES = {
+    S0: { nodes: { pc: N('👤 내 PC', 'scp로 파일 복사', 'person'), pi: N('🍓 라즈베리파이', 'systemctl restart'), fam: N('👪 가족 기기', '집 안 · Tailscale') },
+      edges: [['pc', 'pi', '파일 올리고 다시 켜기', 'person'], ['pi', 'fam', '', 'traffic']], path: ['pc', 'pi', 'fam'], note: '강의 전: 집 라즈베리파이에 손으로 배포' },
+    S9: { nodes: { pc: N('👤 PR → 머지', '', 'person'), gh: N('GitHub', 'main'), act: N('Actions', '시험 → 빌드'), img: N('이미지', 'sha256 다이제스트'), stg: N('staging', '0% → 스모크|→ 100%'), ok: N('👤 승인 버튼', '운영도 같은|3단계로', 'person'), green: N('새 리비전', '0% + /health|→ 스모크 → 100%', '', true), prev: N('이전 리비전', 'prev 태그 · 0%', 'off'), rb: N('👤 rollback 버튼', 'prev로 되돌리기', 'person', true), fam: N('👪 가족 기기', '') },
+      edges: [['pc', 'gh', 'PR', 'person'], ['gh', 'act', '시험'], ['act', 'img', '빌드'], ['img', 'stg', '0% 배포'], ['stg', 'ok', '써 보고', 'person'], ['ok', 'green', '0% → 스모크 → 전환'], ['green', 'fam', '100%', 'traffic'], ['rb', 'prev', '', 'person'], ['prev', 'fam', '', 'off']], path: ['pc', 'gh', 'act', 'img', 'stg', 'ok', 'green', 'fam'], note: '노드 9: 새 버전은 0%로 먼저, 확인에 실패하면 전환하지 않는다' }
+  };
+  var ARCH_NOTE = {
+    S0: '시험도, 미리 써 보는 곳도 없다. 되돌리기는 손으로 만든 백업 폴더. 쓰는 사람이 우리 집뿐이라 이걸로 충분했다.',
+    S9: '사람이 누르는 곳은 머지, 운영 승인, 되돌리기뿐이고 나머지는 AI가 만든 워크플로가 한다. 새 버전은 늘 0%로 먼저 떠서, 확인에 실패하면 손님은 이전 버전을 그대로 쓴다.'
+  };
+  var archDg = makeDiagram(document.getElementById('dSvg'));
+  var archSeg = document.getElementById('archSeg');
+  function archShow(k) { archDg.show(STAGES[k]); document.getElementById('archNote').textContent = ARCH_NOTE[k]; }
+  archSeg.querySelectorAll('button').forEach(function (b) {
+    b.addEventListener('click', function () { pressOnly(archSeg, b); archShow(b.dataset.k); });
+  });
+  archShow('S0');
 
   // 5장: 콜드 스타트
   var minSeg = document.getElementById('minSeg');
